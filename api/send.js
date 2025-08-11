@@ -1,9 +1,7 @@
 /* eslint-disable no-undef */
-import nodemailer from "nodemailer";
+// File: /api/send.js
 
-const FORM_SECRET = process.env.FORM_SECRET;
-const GMAIL_USER = process.env.GMAIL_USER;
-const GMAIL_PASS = process.env.GMAIL_PASS;
+import nodemailer from "nodemailer";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -13,7 +11,7 @@ export default async function handler(req, res) {
   const { name, email, message, honey, timestamp } = req.body;
   const secret = req.headers["x-secret-key"];
 
-  if (secret !== FORM_SECRET) {
+  if (secret !== process.env.FORM_SECRET) {
     return res.status(401).json({ success: false, error: "Unauthorized" });
   }
 
@@ -33,14 +31,14 @@ export default async function handler(req, res) {
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
-        user: GMAIL_USER,
-        pass: GMAIL_PASS,
+        user: process.env.GMAIL_USER,
+        pass: process.env.GMAIL_PASS,
       },
     });
 
     await transporter.sendMail({
       from: "${name}" <${email}>,
-      to: GMAIL_USER,
+      to: process.env.GMAIL_USER,
       subject: "New Portfolio Contact Form Message",
       html: `
         <h3>New Message from Portfolio</h3>

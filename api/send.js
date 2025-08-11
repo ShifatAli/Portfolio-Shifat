@@ -1,7 +1,9 @@
 /* eslint-disable no-undef */
-// File: /pages/api/send.js
-
 import nodemailer from "nodemailer";
+
+const FORM_SECRET = process.env.FORM_SECRET;
+const GMAIL_USER = process.env.GMAIL_USER;
+const GMAIL_PASS = process.env.GMAIL_PASS;
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -11,7 +13,7 @@ export default async function handler(req, res) {
   const { name, email, message, honey, timestamp } = req.body;
   const secret = req.headers["x-secret-key"];
 
-  if (secret !== process.env.FORM_SECRET) {
+  if (secret !== FORM_SECRET) {
     return res.status(401).json({ success: false, error: "Unauthorized" });
   }
 
@@ -31,14 +33,14 @@ export default async function handler(req, res) {
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
-        user: process.env.GMAIL_USER,
-        pass: process.env.GMAIL_PASS,
+        user: GMAIL_USER,
+        pass: GMAIL_PASS,
       },
     });
 
     await transporter.sendMail({
-      from: `"${name}" <${email}>`,
-      to: process.env.GMAIL_USER,
+      from: "${name}" <${email}>,
+      to: GMAIL_USER,
       subject: "New Portfolio Contact Form Message",
       html: `
         <h3>New Message from Portfolio</h3>
@@ -54,4 +56,3 @@ export default async function handler(req, res) {
     return res.status(500).json({ success: false, error: "Server error" });
   }
 }
-//Hello

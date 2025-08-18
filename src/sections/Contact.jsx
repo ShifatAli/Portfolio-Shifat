@@ -1,12 +1,13 @@
-/* eslint-disable no-unused-vars */
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { ArrowUp, Mail, Github, Linkedin } from "lucide-react";
-import { useEffect, useState } from "react";
-import axios from "axios";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import emailjs from "@emailjs/browser";
 
 export default function Contact() {
   const [showScroll, setShowScroll] = useState(false);
-  const [timestamp, setTimestamp] = useState(Date.now());
+  const formRef = useRef();
 
   useEffect(() => {
     const handleScroll = () => setShowScroll(window.scrollY > 300);
@@ -16,104 +17,72 @@ export default function Contact() {
 
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
 
-  const sendEmail = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
 
-    const formData = new FormData(e.target);
-    const data = {
-      name: formData.get("name"),
-      email: formData.get("email"),
-      message: formData.get("message"),
-      honey: formData.get("website"), // honeypot
-      timestamp: parseInt(formData.get("timestamp"), 10),
-    };
+    // Honeypot check
+    if (formRef.current.website.value) return;
 
-    try {
-      const res = await axios.post("/api/send", data, {
-        headers: {
-          "x-secret-key": "shifat@2025!contact_secure", // Must match env var
+    emailjs
+      .sendForm(
+        import.meta.env.VITE_EMAILJS_SERVICE_ID,
+        import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
+        formRef.current,
+        import.meta.env.VITE_EMAILJS_PUBLIC_KEY
+      )
+      .then(
+        () => {
+          toast.success("Message sent successfully!", {
+            position: "top-right",
+            autoClose: 3000,
+            theme: "dark",
+          });
+          formRef.current.reset();
         },
-      });
-
-      if (res.data.success) {
-        alert("Message sent successfully!");
-        e.target.reset();
-        setTimestamp(Date.now());
-      } else {
-        alert("Failed to send message.");
-      }
-    } catch (err) {
-      console.error("Error sending message:", err);
-      alert("Server error. Please try again later.");
-    }
+        (error) => {
+          console.error("EmailJS error:", error.text);
+          toast.error("Failed to send message. Please try again.", {
+            position: "top-right",
+            autoClose: 3000,
+            theme: "dark",
+          });
+        }
+      );
   };
 
   return (
-    <section
-      id="contact"
-      className="relative min-h-screen bg-white dark:bg-black text-black dark:text-white flex flex-col"
-    >
+    <section className="min-h-screen flex flex-col bg-white dark:bg-black text-black dark:text-white">
       <motion.div
-        className="flex-grow flex items-center justify-center px-6"
+        className="flex-grow flex justify-center items-center px-6"
         initial={{ opacity: 0, y: 60 }}
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7 }}
         viewport={{ once: true }}
       >
-        {/* Contact Form */}
         <div className="w-full max-w-3xl">
           <h2 className="text-4xl font-bold text-[#DAA520] mb-8 text-center">
             Contact Me
           </h2>
 
           <div className="bg-[#e2e8f0] dark:bg-[#0f172a] border border-gray-300 dark:border-gray-700 p-8 rounded-lg shadow-lg">
-            <form className="space-y-5" onSubmit={sendEmail}>
-              <input type="hidden" name="timestamp" value={timestamp} />
+            <form
+              ref={formRef}
+              onSubmit={handleSubmit}
+              className="space-y-5"
+              autoComplete="off"
+            >
+              {/* Honeypot */}
               <div style={{ display: "none" }}>
-                <label>
-                  Website
-                  <input type="text" name="website" />
-                </label>
+                <input name="website" />
               </div>
 
-              <div>
-                <label className="block text-sm text-gray-600 dark:text-gray-300 mb-1">
-                  Your Name
-                </label>
-                <input
-                  type="text"
-                  name="name"
-                  required
-                  className="w-full px-4 py-2 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-black text-black dark:text-white"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm text-gray-600 dark:text-gray-300 mb-1">
-                  Your Email
-                </label>
-                <input
-                  type="email"
-                  name="email"
-                  required
-                  className="w-full px-4 py-2 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-black text-black dark:text-white"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm text-gray-600 dark:text-gray-300 mb-1">
-                  Your Message
-                </label>
-                <textarea
-                  name="message"
-                  required
-                  className="w-full px-4 py-2 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-black text-black dark:text-white h-32 resize-none"
-                />
-              </div>
+              <FormInput label="Your Name" name="from_name" type="text" />
+              <FormInput label="Your Email" name="from_email" type="email" />
+              <FormTextarea label="Your Message" name="message" />
 
               <button
                 type="submit"
-                className="bg-[#DAA520] text-white px-6 py-2 rounded-md hover:bg-yellow-600 transition duration-300 w-full"
+                className="w-full px-6 py-2 bg-[#DAA520] text-white rounded-md hover:bg-[#c69c1d] transition duration-300"
               >
                 Send Message
               </button>
@@ -122,46 +91,84 @@ export default function Contact() {
         </div>
       </motion.div>
 
-      {/* Footer-style Let's Connect */}
-      <footer className="bg-[#111827] dark:bg-[#1f2937] py-6 px-6 mt-auto flex justify-center">
-        <div className="max-w-6xl w-full flex flex-wrap justify-center gap-6 text-white text-sm">
-          <a
-            href="mailto:shifatali0906@gmail.com"
-            className="flex items-center gap-2 hover:text-[#DAA520] transition"
-          >
-            <Mail size={18} /> shifatali0906@gmail.com
-          </a>
+      <Footer />
 
-          <a
-            href="https://www.linkedin.com/in/shifatali/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 hover:text-[#DAA520] transition"
-          >
-            <Linkedin size={18} /> linkedin.com/in/shifatali
-          </a>
-
-          <a
-            href="https://github.com/ShifatAli"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 hover:text-[#DAA520] transition"
-          >
-            <Github size={18} /> github.com/ShifatAli
-          </a>
-        </div>
-      </footer>
-
-      {/* Scroll To Top Button */}
       {showScroll && (
         <button
           onClick={scrollToTop}
-          className="fixed bottom-6 right-6 z-50 p-3 rounded-full bg-[#DAA520] text-white shadow-lg hover:bg-yellow-600 transition duration-300"
-          aria-label="Scroll to top"
+          className="fixed bottom-6 right-6 z-50 p-3 rounded-full bg-[#DAA520] text-white shadow-lg hover:bg-[#c69c1d] transition duration-300"
         >
           <ArrowUp size={20} />
         </button>
       )}
+
+      <ToastContainer />
     </section>
+  );
+}
+
+/* Helper Components */
+function FormInput({ label, name, type }) {
+  return (
+    <div>
+      <label className="block mb-1 text-sm text-gray-600 dark:text-gray-300">
+        {label}
+      </label>
+      <input
+        type={type}
+        name={name}
+        required
+        className="w-full px-4 py-2 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-black text-black dark:text-white"
+      />
+    </div>
+  );
+}
+
+function FormTextarea({ label, name }) {
+  return (
+    <div>
+      <label className="block mb-1 text-sm text-gray-600 dark:text-gray-300">
+        {label}
+      </label>
+      <textarea
+        name={name}
+        required
+        className="w-full px-4 py-2 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-black text-black dark:text-white h-32 resize-none"
+      />
+    </div>
+  );
+}
+
+function Footer() {
+  const links = [
+    {
+      href: "mailto:shifatali0906@gmail.com",
+      icon: Mail,
+      label: "shifatali0906@gmail.com",
+    },
+    {
+      href: "https://www.linkedin.com/in/shifatali/",
+      icon: Linkedin,
+      label: "linkedin.com/in/shifatali",
+    },
+    { href: "https://github.com/ShifatAli", icon: Github, label: "github.com/ShifatAli" },
+  ];
+
+  return (
+    <footer className="bg-[#111827] dark:bg-[#1f2937] py-6 flex justify-center">
+      <div className="flex gap-6 text-white text-sm flex-wrap justify-center">
+        {links.map(({ href, icon: Icon, label }) => (
+          <a
+            key={href}
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 hover:text-[#DAA520] transition-colors"
+          >
+            <Icon size={18} /> {label}
+          </a>
+        ))}
+      </div>
+    </footer>
   );
 }

@@ -51,7 +51,10 @@ export default function Contact() {
   };
 
   return (
-    <section className="min-h-screen flex flex-col bg-white dark:bg-black text-black dark:text-white">
+    <section
+      id="contact"  
+      className="min-h-screen flex flex-col bg-white dark:bg-black text-black dark:text-white"
+    >
       <motion.div
         className="flex-grow flex justify-center items-center px-6"
         initial={{ opacity: 0, y: 60 }}
@@ -151,7 +154,11 @@ function Footer() {
       icon: Linkedin,
       label: "linkedin.com/in/shifatali",
     },
-    { href: "https://github.com/ShifatAli", icon: Github, label: "github.com/ShifatAli" },
+    {
+      href: "https://github.com/ShifatAli",
+      icon: Github,
+      label: "github.com/ShifatAli",
+    },
   ];
 
   return (

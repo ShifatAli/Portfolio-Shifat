@@ -51,7 +51,7 @@ export default function EducationCertificates() {
         viewport={{ once: true }}
         transition={{ duration: 0.7 }}
       >
-        <h2 className="text-4xl font-bold text-center text-[#DA9928] dark:text-white mb-10">
+        <h2 className="text-4xl font-bold text-center text-[#DA9928] dark:text-[#DA9928] mb-10">
           Education & Certificates
         </h2>
 

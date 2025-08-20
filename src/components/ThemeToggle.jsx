@@ -4,7 +4,6 @@ import { LiaSun } from "react-icons/lia";
 
 export default function ThemeToggle() {
   const [darkMode, setDarkMode] = useState(() => {
-    // Default to dark mode if no preference is stored
     if ("theme" in localStorage) {
       return localStorage.theme === "dark";
     }
@@ -12,8 +11,13 @@ export default function ThemeToggle() {
   });
 
   useEffect(() => {
-    document.documentElement.classList.toggle("dark", darkMode);
-    localStorage.theme = darkMode ? "dark" : "light";
+    if (darkMode) {
+      document.documentElement.classList.add("dark");
+      localStorage.theme = "dark";
+    } else {
+      document.documentElement.classList.remove("dark");
+      localStorage.theme = "light";
+    }
   }, [darkMode]);
 
   return (
